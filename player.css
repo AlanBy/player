@@ -6,5 +6,5 @@
   --theme-hue: 180;
 
   /*  Color for progress bar. */
-  --progress-color: rgba(255, 0, 0, 0);
+  --progress-color: rgba(255, 0, 0, 255);
 }
