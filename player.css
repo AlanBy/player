@@ -3,7 +3,7 @@
   --splash-image: url('chromecast_ultra.png');
 
   /* The hue to use for the player. */
-  --theme-hue: 100;
+  --theme-hue: 180;
 
   /*  Color for progress bar. */
   --progress-color: rgba(60, 255, 0, 0);
