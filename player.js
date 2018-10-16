@@ -51,8 +51,13 @@ function fetchAssetAndAuth(requestUrl, credential, request) {
   return new Promise(function(resolve, reject) {
     const tokens = requestUrl.split('?');
     const streamUrl = tokens[0];
-    const cameraId = tokens[1].split('=')[1];
-    analytics_.cameraId = cameraId;
+    // const cameraId = tokens[1].split('=')[1];
+    // analytics_.cameraId = cameraId;
+    let cameraId = undefined;
+    if (tokens.length > 1) {
+      cameraId = tokens[1].split('=')[1];
+      analytics_.cameraId = cameraId;
+    }
     // console.log('streamUrl: ' + streamUrl);
     // console.log('cameraId: ' + cameraId);
     // console.log('credential: ' + credential);
@@ -108,9 +113,13 @@ playerManager_.setMessageInterceptor(
       loadRequestData.media.entity, loadRequestData.credentials,
       loadRequestData)
       .then((modifiedRequest) => { // verified users 
+        return new Promise(function(resolve, reject) {
+          setTimeout(() => resolve(modifiedRequest), 7000);
+        });
+      }).then((modifiedRequest) => {
         return modifiedRequest;
-      })
-      .catch(() => {  // invalid users
+        }).catch(() => {  // invalid users
+
         return {
           type: cast.framework.messages.ErrorType.LOAD_FAILED,
           reason: cast.framework.messages.ErrorReason.AUTHENTICATION_EXPIRED
