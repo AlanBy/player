@@ -19,6 +19,7 @@ const castContext_ = cast.framework.CastReceiverContext.getInstance();
  * Player manager object
  */
 const playerManager_ = castContext_.getPlayerManager();
+var videoSteamUrl ='';
 
 /**
  * Enable debug log from Google Cast SDK
@@ -47,22 +48,15 @@ castContext_.loadPlayerLibraries(true);
  * @returns {cast.framework.messages.LoadRequestData}
  */
 function fetchAssetAndAuth(requestUrl, credential, request) {
-  // requestUrl: "https://storage.googleapis.com/tse-summit.appspot.com/hls/bbb/bbb.m3u8?cameraId=12345"
   return new Promise(function(resolve, reject) {
     const tokens = requestUrl.split('?');
     const streamUrl = tokens[0];
-    // const cameraId = tokens[1].split('=')[1];
-    // analytics_.cameraId = cameraId;
-    let cameraId = undefined;
-    if (tokens.length > 1) {
-      cameraId = tokens[1].split('=')[1];
-      analytics_.cameraId = cameraId;
-    }
     // console.log('streamUrl: ' + streamUrl);
     // console.log('cameraId: ' + cameraId);
     // console.log('credential: ' + credential);
 
     request.media.contentUrl = streamUrl;
+    videoSteamUrl=streamUrl;
     if (streamUrl.endsWith('m3u8')) {
       request.media.contentType = 'application/x-mpegURL';
     } else if (streamUrl.endsWith('mpd')) {
@@ -73,27 +67,13 @@ function fetchAssetAndAuth(requestUrl, credential, request) {
       console.log('Unknown contentType for ' + streamUrl);
     }
 
-    $.post('credentials.json', { credential: credential, cameraId: cameraId },
-      function (returnedData) {
-        if (!returnedData.allowed) {
-          console.log('Invalid credential: ' + credential);
-          reject();
-        }
-      }
-    ).done(() => {
-      $.post('camera_info.json', { credential: credential, cameraId: cameraId },
-        function (returnedData) {
-          console.log('cameraName: ' + returnedData.cameraName);
-          cameraName_ = returnedData.cameraName;
-          // Set metadata title for both in Google Home App and CAF Receiver UI.
-          // https://developers.google.com/cast/docs/reference/caf_receiver/cast.framework.messages.GenericMediaMetadata
-          var metadata = new cast.framework.messages.GenericMediaMetadata();
-          metadata.title = returnedData.cameraName;
-          request.media.metadata = metadata;
-          resolve(request);
-        }
-      )
-    });
+    // Set metadata title for both in Google Home App and CAF Receiver UI.
+    // https://developers.google.com/cast/docs/reference/caf_receiver/cast.framework.messages.GenericMediaMetadata
+    var metadata = new cast.framework.messages.GenericMediaMetadata();
+    metadata.title = 'Camera';
+    request.media.metadata = metadata;
+    request.media.contentUrl = request.media.entity;
+    resolve(request);
   });
 };
 
@@ -114,12 +94,19 @@ playerManager_.setMessageInterceptor(
       loadRequestData)
       .then((modifiedRequest) => { // verified users 
         return new Promise(function(resolve, reject) {
-          setTimeout(() => resolve(modifiedRequest), 7000);
+          // setTimeout(() => resolve(modifiedRequest), 7000);
+          var res='';
+         do{
+          $.get(videoSteamUrl,function(data,status){
+            res=status;
+          });
+
+         }while(res!='success');
+
         });
       }).then((modifiedRequest) => {
         return modifiedRequest;
-        }).catch(() => {  // invalid users
-
+      }).catch(() => {  // invalid users
         return {
           type: cast.framework.messages.ErrorType.LOAD_FAILED,
           reason: cast.framework.messages.ErrorReason.AUTHENTICATION_EXPIRED
