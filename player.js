@@ -94,15 +94,8 @@ playerManager_.setMessageInterceptor(
       loadRequestData)
       .then((modifiedRequest) => { // verified users 
         return new Promise(function(resolve, reject) {
-          // setTimeout(() => resolve(modifiedRequest), 7000);
-          var res='';
-         do{
-          $.get(videoSteamUrl,function(data,status){
-            res=status;
-          });
-
-         }while(res!='success');
-
+          setTimeout(() => resolve(modifiedRequest), 7000);
+       
         });
       }).then((modifiedRequest) => {
         return modifiedRequest;
